@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 #if UNITY_EDITOR
 using System.IO;
+using UnityEditor;
 #endif
 
 
@@ -28,15 +29,18 @@ public class IconEditor : MonoBehaviour
 
         //  enum root childlens
         var objects = new List<GameObject>();
+        var objectsActive = new List<bool>();
         foreach (Transform transform in root.transform)
         {
             var obj = transform.gameObject;
+            objectsActive.Add(obj.activeSelf);
+            objects.Add(obj);
             if (activeSwitch)
             {
                 obj.SetActive(false);
             }
-            objects.Add(obj);
         }
+
 
         //  
         var dir = Application.dataPath + "/../IconEditor";
@@ -74,6 +78,30 @@ public class IconEditor : MonoBehaviour
 
             //  save png
             File.WriteAllBytes(dir + "/" + prefix + i.ToString("D2") + ".png", bytes);
+        }
+
+        for (int i = 0; i < objects.Count; ++i)
+        {
+            objects[i].SetActive(objectsActive[i]);
+        }
+
+        camera.targetTexture = null;
+
+        OpenFolder(dir);
+    }
+
+    public static void OpenFolder(string path)
+    {
+        switch(Application.platform)
+        {
+            case RuntimePlatform.OSXEditor: 
+                System.Diagnostics.Process.Start(path);
+                break;
+            case RuntimePlatform.WindowsEditor:
+                EditorUtility.RevealInFinder(path);
+                break;
+            case RuntimePlatform.LinuxEditor:
+                break;
         }
     }
 #endif
